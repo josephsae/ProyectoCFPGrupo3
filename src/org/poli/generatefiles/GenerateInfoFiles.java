@@ -2,6 +2,13 @@ package org.poli.generatefiles;
 
 import java.io.*;
 import java.util.*;
+/**
+ * Clase principal para generar archivos de información de vendedores.
+ * Genera un archivo CSV con información aleatoria de vendedores incluyendo:
+ * - Tipo de documento (CC)
+ * - Número de identificación único
+ * - Nombre completo generado aleatoriamente
+ */
 
 public class GenerateInfoFiles {
 
@@ -20,7 +27,12 @@ public class GenerateInfoFiles {
             System.err.println("Error generating files: " + e.getMessage());
         }
     }
-
+    
+    
+   /**
+     * Crea el directorio especificado si no existe
+     * @param dirPath Ruta del directorio a crear
+     */
     private static void createDirectory(String dirPath) {
         File directory = new File(dirPath);
         if (!directory.exists()) {
@@ -31,8 +43,13 @@ public class GenerateInfoFiles {
             }
         }
     }
-
-
+    
+     /**
+     * Genera el archivo CSV con información de vendedores
+     * @param salesmanCount Cantidad de vendedores a generar
+     * @return Lista de IDs generados
+     * @throws IOException Si ocurre un error de escritura de archivo
+     */
     public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
         Set<Long> ids = new HashSet<>();
         List<Long> idList = new ArrayList<>();
@@ -54,8 +71,11 @@ public class GenerateInfoFiles {
 
         return idList;
     }
-
-    // Generates a random ID (C.C.) between 8 and 10 digits
+    
+    /**
+     * Genera un número de identificación aleatorio
+     * @return Número de identificación entre 8 y 10 dígitos
+     */
     public static long generateRandomID() {
         int digits = 8 + RANDOM.nextInt(3);
         long min = (long) Math.pow(10, digits - 1);
