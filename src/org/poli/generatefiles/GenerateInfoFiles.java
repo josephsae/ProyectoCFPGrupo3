@@ -15,6 +15,7 @@ public class GenerateInfoFiles {
         try {
             createDirectory(DATA_DIR);
             createSalesManInfoFile(5);
+            test();
             System.out.println("Files generated successfully.");
         } catch (IOException e) {
             System.err.println("Error generating files: " + e.getMessage());
@@ -53,6 +54,10 @@ public class GenerateInfoFiles {
         }
 
         return idList;
+    }
+    
+    public static Boolean test() {
+    	return true;
     }
 
     // Generates a random ID (C.C.) between 8 and 10 digits
