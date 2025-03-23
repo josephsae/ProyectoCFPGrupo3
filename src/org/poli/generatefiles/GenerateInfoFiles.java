@@ -16,6 +16,7 @@ public class GenerateInfoFiles {
             createDirectory(DATA_DIR);
             createSalesManInfoFile(5);
             test();
+            
             System.out.println("Files generated successfully.");
         } catch (IOException e) {
             System.err.println("Error generating files: " + e.getMessage());
