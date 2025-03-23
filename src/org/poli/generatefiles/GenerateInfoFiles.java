@@ -6,7 +6,8 @@ import java.util.*;
 public class GenerateInfoFiles {
 
     private static final String DATA_DIR = "data/";
-    private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv";
+    private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv"; 
+    private static final String PRODUCTS_FILE = DATA_DIR + "products.csv";
     private static final String[] FIRST_NAMES = {"Carlos", "Maria", "Luis", "Andrea", "Pedro"};
     private static final String[] LAST_NAMES = {"Gomez", "Rodriguez", "Lopez", "Fernandez", "Martinez"};
     private static final Random RANDOM = new Random();
@@ -15,6 +16,7 @@ public class GenerateInfoFiles {
         try {
             createDirectory(DATA_DIR);
             createSalesManInfoFile(5);
+            createProductsFile(10);
             System.out.println("Files generated successfully.");
         } catch (IOException e) {
             System.err.println("Error generating files: " + e.getMessage());
@@ -61,5 +63,15 @@ public class GenerateInfoFiles {
         long min = (long) Math.pow(10, digits - 1);
         long max = (long) Math.pow(10, digits) - 1;
         return min + (long)(RANDOM.nextDouble() * (max - min));
+    }
+    public static void createProductsFile(int productCount) throws IOException {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(PRODUCTS_FILE))) {
+            for (int i = 1; i <= productCount; i++) {
+                String id = String.format("P%03d", i);
+                String name = "Product" + i;
+                int price = (RANDOM.nextInt(50) + 1) * 1000;
+                writer.write(id + ";" + name + ";" + price + "\n");
+            }
+        }
     }
 }
