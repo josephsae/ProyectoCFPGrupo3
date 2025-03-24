@@ -3,6 +3,23 @@ package org.poli.generatefiles;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Genera archivos CSV con información simulada de productos, vendedores y
+ * ventas.
+ * <p>
+ * Ejemplo de uso:
+ * 
+ * <pre>{@code
+ * - Archivos generados en 'data/':
+ *   1. products.csv    (Productos con ID, nombre y precio)
+ *   2. salesmen.csv    (Vendedores con documento y nombres)
+ *   3. sales_[ID].csv  (Ventas por vendedor)
+ * }</pre>
+ * 
+ * @author Poli
+ * @version 1.0
+ */
+
 public class GenerateInfoFiles {
 
 	private static final String DATA_DIR = "data/";
@@ -32,6 +49,11 @@ public class GenerateInfoFiles {
 		}
 	}
 
+	/**
+	 * Crea un directorio si no existe.
+	 * 
+	 * @param dirPath Ruta del directorio a crear
+	 */
 	private static void createDirectory(String dirPath) {
 		File directory = new File(dirPath);
 		if (!directory.exists()) {
@@ -43,6 +65,13 @@ public class GenerateInfoFiles {
 		}
 	}
 
+	/**
+	 * Genera un archivo de ventas para un vendedor específico.
+	 * 
+	 * @param randomSalesCount Cantidad de productos únicos en el reporte
+	 * @param id               Identificación única del vendedor
+	 * @throws IOException Si ocurre un error de escritura
+	 */
 	public static void createSalesMenFile(int randomSalesCount, long id) throws IOException {
 		String filename = DATA_DIR + "sales_" + id + ".csv";
 
@@ -64,6 +93,13 @@ public class GenerateInfoFiles {
 		}
 	}
 
+	/**
+	 * Genera el archivo con información de vendedores.
+	 * 
+	 * @param salesmanCount Número de vendedores a generar
+	 * @return Lista de IDs únicos generados
+	 * @throws IOException Si ocurre un error de escritura
+	 */
 	public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
 		Set<Long> ids = new HashSet<>();
 		List<Long> idList = new ArrayList<>();
@@ -87,6 +123,12 @@ public class GenerateInfoFiles {
 		return idList;
 	}
 
+	/**
+	 * Genera el archivo con información de productos.
+	 * 
+	 * @param productCount Número de productos a generar
+	 * @throws IOException Si ocurre un error de escritura
+	 */
 	public static void createProductsFile(int productCount) throws IOException {
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(PRODUCTS_FILE), "UTF-8"))) {
@@ -109,7 +151,11 @@ public class GenerateInfoFiles {
 		}
 	}
 
-	// Generates a random ID (C.C.) between 8 and 10 digits
+	/**
+	 * Genera un número de identificación aleatorio válido.
+	 * 
+	 * @return Número de 8 a 10 dígitos simulando una cédula colombiana
+	 */
 	public static long generateRandomID() {
 		int digits = 8 + RANDOM.nextInt(3);
 		long min = (long) Math.pow(10, digits - 1);
