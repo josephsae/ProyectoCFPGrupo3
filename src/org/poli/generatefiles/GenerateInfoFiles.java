@@ -34,6 +34,23 @@ public class GenerateInfoFiles {
             }
         }
     }
+    public static void createSalesMenFile(int randomSalesCount, long id) throws IOException {
+        String filename = DATA_DIR + "sales_" + id + ".csv";
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(filename))) {
+            // Header with vendor info
+            writer.write("TipoDocumentoVendedor;NúmeroDocumentoVendedor\n");
+            writer.write("CC;" + id + "\n");
+
+            // Header for products
+            writer.write("ProductID;Quantity\n");
+
+            for (int i = 0; i < randomSalesCount; i++) {
+                int productId = RANDOM.nextInt(10) + 1; // P001–P010
+                int quantity = RANDOM.nextInt(5) + 1;
+                writer.write(String.format("P%03d;%d\n", productId, quantity));
+            }
+        }
+    }
 
 
     public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
