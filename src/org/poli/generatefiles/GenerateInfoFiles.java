@@ -89,13 +89,13 @@ public class GenerateInfoFiles {
 				int productId = RANDOM.nextInt(PRODUCT_COUNT) + 1;
 				if (usedProductIds.add(productId)) {
 					int quantity = RANDOM.nextInt(5) + 1;
-					//writer.write(String.format("P%03d;%d\n", productId, quantity));
+					// writer.write(String.format("P%03d;%d\n", productId, quantity));
 					int price = searchPriceProduct(String.format("P%03d", productId));
-					cont+=price*quantity;
-					writer.write(String.format("P%03d;%d;%d\n", productId, quantity, price*quantity));
+					cont += price * quantity;
+					writer.write(String.format("P%03d;%d;%d\n", productId, quantity, price * quantity));
 				}
 			}
-			writer.write("Total;"+cont);
+			writer.write("Total;" + cont);
 		}
 	}
 
@@ -189,13 +189,13 @@ public class GenerateInfoFiles {
 		return finalarray;
 	}
 
-	public static int searchPriceProduct(String id){
+	public static int searchPriceProduct(String id) {
 		ArrayList<String> data = ContentFile(PRODUCTS_FILE);
 		int price = 0;
-		for (int i = 0; i < data.size(); i++){
+		for (int i = 0; i < data.size(); i++) {
 
 			String Line[] = data.get(i).split(";");
-			if (Line[0].equalsIgnoreCase(id)){
+			if (Line[0].equalsIgnoreCase(id)) {
 				price = Integer.parseInt(Line[2]);
 			}
 
@@ -203,31 +203,31 @@ public class GenerateInfoFiles {
 		return price;
 	}
 
-	public static void reorganizeSalesMan(){
+	public static void reorganizeSalesMan() {
 		ArrayList<String> data = ContentFile(VENDORS_FILE);
 		ArrayList<String> salesman = new ArrayList<String>();
-		
-		for (int i = 0; i < data.size(); i++){
+
+		for (int i = 0; i < data.size(); i++) {
 			String Line[] = data.get(i).split(";");
 			ArrayList<String> data2 = ContentFile(DATA_DIR + "sales_" + Line[1] + ".csv");
-			int sale = Integer.parseInt(data2.get(data2.size()-1).split(";")[1]);
-			if(salesman.size() == 0 ){
-				salesman.add(Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
-			}else{
-				for (int j = 0; j < salesman.size(); j++){
+			int sale = Integer.parseInt(data2.get(data2.size() - 1).split(";")[1]);
+			if (salesman.size() == 0) {
+				salesman.add(Line[0] + ";" + Line[1] + ";" + Line[2] + ";" + sale);
+			} else {
+				for (int j = 0; j < salesman.size(); j++) {
 					String Line2[] = salesman.get(j).split(";");
 					int sale2 = Integer.parseInt(Line2[3]);
-					if(sale > sale2){
-						salesman.add(j, Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
+					if (sale > sale2) {
+						salesman.add(j, Line[0] + ";" + Line[1] + ";" + Line[2] + ";" + sale);
 						break;
 					}
-					if(j == salesman.size()-1){
-						salesman.add(Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
+					if (j == salesman.size() - 1) {
+						salesman.add(Line[0] + ";" + Line[1] + ";" + Line[2] + ";" + sale);
 						break;
 					}
 				}
 			}
-			
+
 		}
 
 		File file = new File(VENDORS_FILE);
@@ -243,7 +243,7 @@ public class GenerateInfoFiles {
 				FileWriter fstream = new FileWriter(file, true);
 				BufferedWriter out = new BufferedWriter(fstream);
 
-				for (int i = 0; i < salesman.size(); i++){
+				for (int i = 0; i < salesman.size(); i++) {
 					out.write(salesman.get(i) + ";\n");
 				}
 				out.close();
