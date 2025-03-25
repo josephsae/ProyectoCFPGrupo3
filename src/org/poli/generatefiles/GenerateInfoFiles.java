@@ -75,6 +75,7 @@ public class GenerateInfoFiles {
 	 */
 	public static void createSalesMenFile(int randomSalesCount, long id) throws IOException {
 		String filename = DATA_DIR + "sales_" + id + ".csv";
+		int cont = 0;
 
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
@@ -88,11 +89,13 @@ public class GenerateInfoFiles {
 				int productId = RANDOM.nextInt(PRODUCT_COUNT) + 1;
 				if (usedProductIds.add(productId)) {
 					int quantity = RANDOM.nextInt(5) + 1;
-					writer.write(String.format("P%03d;%d\n", productId, quantity));
-					
+					//writer.write(String.format("P%03d;%d\n", productId, quantity));
+					int price = searchPriceProduct(String.format("P%03d", productId));
+					cont+=price*quantity;
+					writer.write(String.format("P%03d;%d;%d\n", productId, quantity, price*quantity));
 				}
 			}
-			
+			writer.write("Total;"+cont);
 		}
 	}
 
@@ -184,6 +187,20 @@ public class GenerateInfoFiles {
 			e.printStackTrace();
 		}
 		return finalarray;
+	}
+
+	public static int searchPriceProduct(String id){
+		ArrayList<String> data = ContentFile(PRODUCTS_FILE);
+		int price = 0;
+		for (int i = 0; i < data.size(); i++){
+
+			String Line[] = data.get(i).split(";");
+			if (Line[0].equalsIgnoreCase(id)){
+				price = Integer.parseInt(Line[2]);
+			}
+
+		}
+		return price;
 	}
 
 	
