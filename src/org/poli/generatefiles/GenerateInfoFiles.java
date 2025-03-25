@@ -43,7 +43,7 @@ public class GenerateInfoFiles {
 			for (long id : salesmanIds) {
 				createSalesMenFile(SALESMAN_COUNT, id);
 			}
-
+			reorganizeSalesMan();
 			System.out.println("Files generated successfully.");
 		} catch (IOException e) {
 			System.err.println("Error generating files: " + e.getMessage());
@@ -203,6 +203,56 @@ public class GenerateInfoFiles {
 		return price;
 	}
 
-	
+	public static void reorganizeSalesMan(){
+		ArrayList<String> data = ContentFile(VENDORS_FILE);
+		ArrayList<String> salesman = new ArrayList<String>();
+		
+		for (int i = 0; i < data.size(); i++){
+			String Line[] = data.get(i).split(";");
+			ArrayList<String> data2 = ContentFile(DATA_DIR + "sales_" + Line[1] + ".csv");
+			int sale = Integer.parseInt(data2.get(data2.size()-1).split(";")[1]);
+			if(salesman.size() == 0 ){
+				salesman.add(Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
+			}else{
+				for (int j = 0; j < salesman.size(); j++){
+					String Line2[] = salesman.get(j).split(";");
+					int sale2 = Integer.parseInt(Line2[3]);
+					if(sale > sale2){
+						salesman.add(j, Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
+						break;
+					}
+					if(j == salesman.size()-1){
+						salesman.add(Line[0]+";"+Line[1]+";"+Line[2]+";"+sale);
+						break;
+					}
+				}
+			}
+			
+		}
+
+		File file = new File(VENDORS_FILE);
+		BufferedWriter bw;
+
+		if (file.exists()) {
+
+			try {
+
+				bw = new BufferedWriter(new FileWriter(file));
+				bw.write("");
+
+				FileWriter fstream = new FileWriter(file, true);
+				BufferedWriter out = new BufferedWriter(fstream);
+
+				for (int i = 0; i < salesman.size(); i++){
+					out.write(salesman.get(i) + ";\n");
+				}
+				out.close();
+
+			} catch (IOException e) {
+
+				e.printStackTrace();
+			}
+		}
+	}
 
 }
