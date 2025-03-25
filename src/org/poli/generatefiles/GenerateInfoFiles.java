@@ -32,7 +32,7 @@ public class GenerateInfoFiles {
 	private static final Random RANDOM = new Random();
 	private static final String[] PRODUCT_NAMES = { "Laptop", "Mouse", "Teclado", "Monitor", "Impresora", "Celular",
 			"Tablet", "Auriculares", "GPS", "Televisor", "Control remoto", "Camara de seguridad" };
-	private static final int PRODUCT_COUNT = 10;
+	private static final int PRODUCT_COUNT = 11;
 	private static final int SALESMAN_COUNT = 5;
 
 	public static void main(String[] args) {
@@ -41,8 +41,9 @@ public class GenerateInfoFiles {
 			createProductsFile(PRODUCT_COUNT);
 			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
 			for (long id : salesmanIds) {
-				createSalesMenFile(5, id);
+				createSalesMenFile(SALESMAN_COUNT, id);
 			}
+
 			System.out.println("Files generated successfully.");
 		} catch (IOException e) {
 			System.err.println("Error generating files: " + e.getMessage());
@@ -88,8 +89,10 @@ public class GenerateInfoFiles {
 				if (usedProductIds.add(productId)) {
 					int quantity = RANDOM.nextInt(5) + 1;
 					writer.write(String.format("P%03d;%d\n", productId, quantity));
+					
 				}
 			}
+			
 		}
 	}
 
@@ -162,4 +165,27 @@ public class GenerateInfoFiles {
 		long max = (long) Math.pow(10, digits) - 1;
 		return min + (long) (RANDOM.nextDouble() * (max - min));
 	}
+
+	public static ArrayList<String> ContentFile(String route) {
+		File file = new File(route);
+		String chain = null;
+		ArrayList<String> finalarray = new ArrayList<String>();
+
+		try {
+			FileReader f = new FileReader(file);
+			BufferedReader b = new BufferedReader(f);
+
+			while ((chain = b.readLine()) != null) {
+				finalarray.add(chain);
+			}
+			b.close();
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return finalarray;
+	}
+
+	
+
 }
