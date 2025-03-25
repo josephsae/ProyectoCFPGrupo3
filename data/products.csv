@@ -1,10 +1,11 @@
-P001;Control remoto;2000
-P002;Teclado;27000
-P003;Mouse;5000
-P004;Laptop;43000
-P005;Impresora;37000
-P006;Tablet;47000
-P007;Monitor;30000
-P008;Camara de seguridad;11000
-P009;Auriculares;38000
-P010;Celular;16000
+P001;Televisor;4000
+P002;Impresora;15000
+P003;Camara de seguridad;28000
+P004;Auriculares;27000
+P005;GPS;2000
+P006;Mouse;33000
+P007;Laptop;1000
+P008;Monitor;43000
+P009;Celular;29000
+P010;Tablet;10000
+P011;Teclado;8000
