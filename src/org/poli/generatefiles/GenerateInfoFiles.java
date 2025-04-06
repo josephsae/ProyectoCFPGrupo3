@@ -257,20 +257,30 @@ public class GenerateInfoFiles {
 	}
         
         public static void generateSortedProductSales() {
-           File folder = new File(DATA_DIR);
-           File[] files = folder.listFiles((dir, name) -> name.startsWith("sales_") && name.endsWith(".csv"));
-           Map<String, Integer> productSales = new HashMap<>();
+            Map<String, Integer> productSales = new HashMap<>();
+            List<String> lines = readFile(DATA_DIR + "salesmen.csv");
+
            
-           if (files != null) {
-               for (File file : files) {
-                   ArrayList<String> lines = ContentFile(file.getPath());
-                   for (int i = 3; i < lines.size() - 1; i++) { // saltar encabezados y línea de total
-                       String[] parts = lines.get(i).split(";");
-                        if (parts.length >= 2) {
-                             String productId = parts[0];
-                              int quantity = Integer.parseInt(parts[1]);
-                               productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);
+            for (String line : lines) {
+                String[] parts = line.split(";");
+                if (parts.length >= 2) {
+                    String id = parts[1];
+                    String salesFile = DATA_DIR + "sales_" + id + ".csv";
+                    File file = new File(salesFile);
+               
+                     if (!file.exists()) {
+                         System.err.println("⚠️ Archivo no encontrado: " + salesFile);
+                         continue;
                         }
+                     List<String> salesLines = readFile(salesFile);
+                     
+                     for (int i = 3; i < salesLines.size(); i++) {
+                         String[] saleParts = salesLines.get(i).split(";");
+                         if (saleParts.length >= 2) {
+                             String productId = saleParts[0];
+                             int quantity = Integer.parseInt(saleParts[1]);
+                             productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);   
+                         }
                    }
                }
            }
@@ -282,9 +292,21 @@ public class GenerateInfoFiles {
                for (Map.Entry<String, Integer> entry : sortedSales) {
                     writer.write(entry.getKey() + ";" + entry.getValue() + "\n");
                }
-               System.out.println("Archive 'products_sold.csv' successfully generated.");
+               System.out.println("✅ Archivo 'products_sold.csv' generado exitosamente.");
            }catch (IOException e) {
-               e.printStackTrace();
+               System.err.println("❌ Error escribiendo el archivo de productos vendidos: " + e.getMessage());
            }
+        }
+        public static List<String> readFile(String filePath) {
+             List<String> lines = new ArrayList<>();
+              try (BufferedReader reader = new BufferedReader(new FileReader(filePath))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    lines.add(line);
+                }
+              } catch (IOException e) {
+                  System.err.println("❌ Error al leer el archivo: " + filePath + " - " + e.getMessage());
+              }
+               return lines;
         }
 }
