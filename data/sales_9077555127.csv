@@ -1,0 +1,28 @@
+TipoDocumentoVendedor;IDVendedor
+<<<<<<<< HEAD:data/sales_99091266.csv
+CC;99091266
+ProductID;Quantity
+P005;1
+P008;4
+P002;1
+P003;4
+P004;5
+P009;4
+P010;2
+P006;4
+P001;3
+P007;3
+========
+CC;9077555127
+ProductID;Quantity
+P008;1
+P004;3
+P005;5
+P007;1
+P002;2
+P006;1
+P010;5
+P009;4
+P001;3
+P003;1
+>>>>>>>> develop:data/sales_9077555127.csv
