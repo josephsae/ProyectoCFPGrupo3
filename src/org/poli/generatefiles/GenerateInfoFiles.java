@@ -44,6 +44,7 @@ public class GenerateInfoFiles {
 				createSalesMenFile(SALESMAN_COUNT, id);
 			}
 			reorganizeSalesMan();
+                        generateSortedProductSales();
 			System.out.println("Files generated successfully.");
 		} catch (IOException e) {
 			System.err.println("Error generating files: " + e.getMessage());
@@ -254,5 +255,36 @@ public class GenerateInfoFiles {
 			}
 		}
 	}
-
+        
+        public static void generateSortedProductSales() {
+           File folder = new File(DATA_DIR);
+           File[] files = folder.listFiles((dir, name) -> name.startsWith("sales_") && name.endsWith(".csv"));
+           Map<String, Integer> productSales = new HashMap<>();
+           
+           if (files != null) {
+               for (File file : files) {
+                   ArrayList<String> lines = ContentFile(file.getPath());
+                   for (int i = 3; i < lines.size() - 1; i++) { // saltar encabezados y línea de total
+                       String[] parts = lines.get(i).split(";");
+                        if (parts.length >= 2) {
+                             String productId = parts[0];
+                              int quantity = Integer.parseInt(parts[1]);
+                               productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);
+                        }
+                   }
+               }
+           }
+           List<Map.Entry<String, Integer>> sortedSales = new ArrayList<>(productSales.entrySet());
+           sortedSales.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+           
+           try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_DIR + "products_sold.csv"))) {
+               writer.write("ProductID;TotalQuantity\n");
+               for (Map.Entry<String, Integer> entry : sortedSales) {
+                    writer.write(entry.getKey() + ";" + entry.getValue() + "\n");
+               }
+               System.out.println("Archive 'products_sold.csv' successfully generated.");
+           }catch (IOException e) {
+               e.printStackTrace();
+           }
+        }
 }
