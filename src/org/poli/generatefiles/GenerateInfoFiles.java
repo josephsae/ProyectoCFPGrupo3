@@ -41,7 +41,7 @@ public class GenerateInfoFiles {
 			createProductsFile(PRODUCT_COUNT);
 			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
 			for (long id : salesmanIds) {
-				createSalesMenFile(5, id);
+				createSalesMenFile(PRODUCT_COUNT, id);
 			}
 			System.out.println("Files generated successfully.");
 		} catch (IOException e) {
