@@ -232,23 +232,23 @@ public class GenerateInfoFiles {
 	}
 
 	/**
-	 * Serializa los datos de productos y vendedores a archivos .ser.
+	 * Serializa los datos de Product y Salesman a archivos .ser.
 	 */
 	public static void serializeData() {
-		List<Producto> productos = new ArrayList<>();
+		List<Product> products = new ArrayList<>();
 		for (String line : readFile(PRODUCTS_FILE)) {
 			String[] parts = line.split(";");
-			productos.add(new Producto(parts[0], parts[1], Integer.parseInt(parts[2])));
+			products.add(new Product(parts[0], parts[1], Integer.parseInt(parts[2])));
 		}
-		serializeObject(productos, PRODUCTS_SER);
+		serializeObject(products, PRODUCTS_SER);
 
-		List<Vendedor> vendedores = new ArrayList<>();
+		List<Salesman> salesmen = new ArrayList<>();
 		for (String line : readFile(SALESPEOPLE_FILE)) {
 			String[] parts = line.split(";");
 			if (parts.length >= 3)
-				vendedores.add(new Vendedor(parts[0], Long.parseLong(parts[1]), parts[2]));
+				salesmen.add(new Salesman(parts[0], Long.parseLong(parts[1]), parts[2]));
 		}
-		serializeObject(vendedores, SALESPEOPLE_SER);
+		serializeObject(salesmen, SALESPEOPLE_SER);
 	}
 
 	/**
@@ -266,18 +266,19 @@ public class GenerateInfoFiles {
 	}
 
 	/**
-	 * Lee e imprime los datos serializados de productos y vendedores.
+	 * Lee e imprime los datos serializados de Product y Salesman.
 	 */
 	@SuppressWarnings("unchecked")
 	public static void readSerializedData() {
 		System.out.println("\n📦 Productos serializados:");
-		List<Producto> productos = (List<Producto>) deserializeObject(PRODUCTS_SER);
-		if (productos != null) productos.forEach(System.out::println);
+		List<Product> products = (List<Product>) deserializeObject(PRODUCTS_SER);
+		if (products != null) products.forEach(System.out::println);
 
 		System.out.println("\n🧑‍💼 Vendedores serializados:");
-		List<Vendedor> vendedores = (List<Vendedor>) deserializeObject(SALESPEOPLE_SER);
-		if (vendedores != null) vendedores.forEach(System.out::println);
+		List<Salesman> salesmen = (List<Salesman>) deserializeObject(SALESPEOPLE_SER);
+		if (salesmen != null) salesmen.forEach(System.out::println);
 	}
+
 
 	/**
 	 * Deserializa un archivo .ser y retorna el objeto.
