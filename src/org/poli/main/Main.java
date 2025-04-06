@@ -3,60 +3,71 @@ package org.poli.main;
 import java.io.*;
 import java.util.*;
 
+import org.poli.generatefiles.Product;
+import org.poli.generatefiles.Salesman;
+
 public class Main {
 
 	private static final String DATA_DIR = "data/";
-	private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv";
-	private static final String PRODUCTS_FILE = DATA_DIR + "products.csv";
-	private static final String OUTPUT_FILE = DATA_DIR + "sales_report.csv";
+	private static final String VENDORS_SER = DATA_DIR + "salesmen.ser";
+	private static final String PRODUCTS_SER = DATA_DIR + "products.ser";
+	private static final String SALES_REPORT_FILE = DATA_DIR + "sales_report.csv";
+	private static final String PRODUCTS_REPORT_FILE = DATA_DIR + "products_report.csv";
 
 	public static void main(String[] args) {
 		try {
 			generateSalesReport();
-			System.out.println("✅ Reporte de ventas generado exitosamente en: " + OUTPUT_FILE);
 			generateSortedProductSales();
 		} catch (Exception e) {
 			System.err.println("❌ Error al generar los reportes: " + e.getMessage());
 		}
 	}
 
-	private static void generateSalesReport() throws IOException {
+	private static void generateSalesReport() throws IOException, ClassNotFoundException {
 		Map<String, Integer> productPrices = loadProductPrices();
+		List<Salesman> salesmen = loadSalesmen();
 		List<SalesEntry> salesEntries = new ArrayList<>();
 
-		List<String> vendors = readFile(VENDORS_FILE);
-		for (String line : vendors) {
-			String[] parts = line.split(";");
-			if (parts.length < 3) continue;
-
-			String id = parts[1];
-			String fullName = parts[2];
-
+		for (Salesman s : salesmen) {
+			String id = String.valueOf(s.getId());
+			String fullName = s.getName();
 			int total = calculateTotalSalesForVendor(id, productPrices);
 			salesEntries.add(new SalesEntry(fullName, total));
 		}
 
-		// Ordenar de mayor a menor por total recaudado
 		salesEntries.sort((a, b) -> Integer.compare(b.total, a.total));
 
-		// Escribir archivo CSV de reporte
-		try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE))) {
+		try (BufferedWriter writer = new BufferedWriter(new FileWriter(SALES_REPORT_FILE))) {
 			for (SalesEntry entry : salesEntries) {
 				writer.write(entry.name + ";" + entry.total + "\n");
 			}
+			System.out.println("✅ Reporte de ventas generado exitosamente en: " + SALES_REPORT_FILE);
+		} catch (IOException e) {
+			System.err.println("❌ Error escribiendo el archivo de reporte de ventas: " + e.getMessage());
 		}
 	}
 
-	private static Map<String, Integer> loadProductPrices() throws IOException {
+	/**
+	 * Carga los precios de los productos desde el archivo serializado.
+	 */
+	private static Map<String, Integer> loadProductPrices() throws IOException, ClassNotFoundException {
 		Map<String, Integer> prices = new HashMap<>();
-		List<String> lines = readFile(PRODUCTS_FILE);
-		for (String line : lines) {
-			String[] parts = line.split(";");
-			if (parts.length >= 3) {
-				prices.put(parts[0], Integer.parseInt(parts[2]));
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(PRODUCTS_SER))) {
+			@SuppressWarnings("unchecked")
+			List<Product> products = (List<Product>) ois.readObject();
+			for (Product p : products) {
+				prices.put(p.getId(), p.getPrice());
 			}
 		}
 		return prices;
+	}
+
+	private static List<Salesman> loadSalesmen() throws IOException, ClassNotFoundException {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(VENDORS_SER))) {
+			@SuppressWarnings("unchecked")
+			List<Salesman> salespeople = (List<Salesman>) ois.readObject();
+			return salespeople;
+		}
 	}
 
 	private static int calculateTotalSalesForVendor(String id, Map<String, Integer> productPrices) {
@@ -71,7 +82,8 @@ public class Main {
 				readingProducts = true;
 				continue;
 			}
-			if (!readingProducts) continue;
+			if (!readingProducts)
+				continue;
 
 			String[] parts = line.split(";");
 			if (parts.length >= 2) {
@@ -98,48 +110,57 @@ public class Main {
 		}
 		return result;
 	}
-	
-    public static void generateSortedProductSales() {
-        Map<String, Integer> productSales = new HashMap<>();
-        List<String> lines = readFile(DATA_DIR + "salesmen.csv");
 
-       
-        for (String line : lines) {
-            String[] parts = line.split(";");
-            if (parts.length >= 2) {
-                String id = parts[1];
-                String salesFile = DATA_DIR + "sales_" + id + ".csv";
-                File file = new File(salesFile);
-           
-                 if (!file.exists()) {
-                     System.err.println("⚠️ Archivo no encontrado: " + salesFile);
-                     continue;
-                    }
-                 List<String> salesLines = readFile(salesFile);
-                 
-                 for (int i = 3; i < salesLines.size(); i++) {
-                     String[] saleParts = salesLines.get(i).split(";");
-                     if (saleParts.length >= 2) {
-                         String productId = saleParts[0];
-                         int quantity = Integer.parseInt(saleParts[1]);
-                         productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);   
-                     }
-               }
-           }
-       }
-       List<Map.Entry<String, Integer>> sortedSales = new ArrayList<>(productSales.entrySet());
-       sortedSales.sort((a, b) -> b.getValue().compareTo(a.getValue()));
-       
-       try (BufferedWriter writer = new BufferedWriter(new FileWriter(DATA_DIR + "products_sold.csv"))) {
-           writer.write("ProductID;TotalQuantity\n");
-           for (Map.Entry<String, Integer> entry : sortedSales) {
-                writer.write(entry.getKey() + ";" + entry.getValue() + "\n");
-           }
-           System.out.println("✅ Archivo 'products_sold.csv' generado exitosamente.");
-       }catch (IOException e) {
-           System.err.println("❌ Error escribiendo el archivo de productos vendidos: " + e.getMessage());
-       }
-    }
+	public static void generateSortedProductSales() {
+		Map<String, Integer> productSales = new HashMap<>();
+
+		try {
+			List<Salesman> salesmen = loadSalesmen();
+
+			for (Salesman s : salesmen) {
+				String id = String.valueOf(s.getId());
+				String salesFile = DATA_DIR + "sales_" + id + ".csv";
+				File file = new File(salesFile);
+
+				if (!file.exists()) {
+					System.err.println("⚠️ Archivo no encontrado: " + salesFile);
+					continue;
+				}
+
+				List<String> salesLines = readFile(salesFile);
+
+				boolean readingProducts = false;
+				for (String line : salesLines) {
+					if (line.startsWith("ProductID")) {
+						readingProducts = true;
+						continue;
+					}
+					if (!readingProducts) continue;
+
+					String[] parts = line.split(";");
+					if (parts.length >= 2) {
+						String productId = parts[0];
+						int quantity = Integer.parseInt(parts[1]);
+						productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);
+					}
+				}
+			}
+
+			List<Map.Entry<String, Integer>> sortedSales = new ArrayList<>(productSales.entrySet());
+			sortedSales.sort((a, b) -> b.getValue().compareTo(a.getValue()));
+
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(PRODUCTS_REPORT_FILE))) {
+				writer.write("ProductID;TotalQuantity\n");
+				for (Map.Entry<String, Integer> entry : sortedSales) {
+					writer.write(entry.getKey() + ";" + entry.getValue() + "\n");
+				}
+				System.out.println("✅ Reporte de productos vendidos generado exitosamente en: " + PRODUCTS_REPORT_FILE);
+			}
+		} catch (IOException | ClassNotFoundException e) {
+			System.err.println("❌ Error al generar reporte de productos vendidos: " + e.getMessage());
+		}
+	}
+
 
 	private static class SalesEntry {
 		String name;
