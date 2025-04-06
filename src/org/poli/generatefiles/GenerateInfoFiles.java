@@ -43,9 +43,9 @@ public class GenerateInfoFiles {
 			for (long id : salesmanIds) {
 				createSalesMenFile(PRODUCT_COUNT, id);
 			}
-			System.out.println("Files generated successfully.");
+			System.out.println("✅ Files generated successfully.");
 		} catch (IOException e) {
-			System.err.println("Error generating files: " + e.getMessage());
+			System.err.println("❌ Error generating files: " + e.getMessage());
 		}
 	}
 
