@@ -3,11 +3,14 @@ package org.poli.main;
 import java.io.*;
 import java.util.*;
 
+import org.poli.generatefiles.Product;
+import org.poli.generatefiles.Salesman;
+
 public class Main {
 
 	private static final String DATA_DIR = "data/";
-	private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv";
-	private static final String PRODUCTS_FILE = DATA_DIR + "products.csv";
+	private static final String VENDORS_SER = DATA_DIR + "salesmen.ser";
+	private static final String PRODUCTS_SER = DATA_DIR + "products.ser";
 	private static final String OUTPUT_FILE = DATA_DIR + "sales_report.csv";
 
 	public static void main(String[] args) {
@@ -19,26 +22,20 @@ public class Main {
 		}
 	}
 
-	private static void generateSalesReport() throws IOException {
+	private static void generateSalesReport() throws IOException, ClassNotFoundException {
 		Map<String, Integer> productPrices = loadProductPrices();
+		List<Salesman> salesmen = loadSalesmen();
 		List<SalesEntry> salesEntries = new ArrayList<>();
 
-		List<String> vendors = readFile(VENDORS_FILE);
-		for (String line : vendors) {
-			String[] parts = line.split(";");
-			if (parts.length < 3) continue;
-
-			String id = parts[1];
-			String fullName = parts[2];
-
+		for (Salesman s : salesmen) {
+			String id = String.valueOf(s.getId());
+			String fullName = s.getName();
 			int total = calculateTotalSalesForVendor(id, productPrices);
 			salesEntries.add(new SalesEntry(fullName, total));
 		}
 
-		// Ordenar de mayor a menor por total recaudado
 		salesEntries.sort((a, b) -> Integer.compare(b.total, a.total));
 
-		// Escribir archivo CSV de reporte
 		try (BufferedWriter writer = new BufferedWriter(new FileWriter(OUTPUT_FILE))) {
 			for (SalesEntry entry : salesEntries) {
 				writer.write(entry.name + ";" + entry.total + "\n");
@@ -46,16 +43,27 @@ public class Main {
 		}
 	}
 
-	private static Map<String, Integer> loadProductPrices() throws IOException {
+	/**
+	 * Carga los precios de los productos desde el archivo serializado.
+	 */
+	private static Map<String, Integer> loadProductPrices() throws IOException, ClassNotFoundException {
 		Map<String, Integer> prices = new HashMap<>();
-		List<String> lines = readFile(PRODUCTS_FILE);
-		for (String line : lines) {
-			String[] parts = line.split(";");
-			if (parts.length >= 3) {
-				prices.put(parts[0], Integer.parseInt(parts[2]));
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(PRODUCTS_SER))) {
+			@SuppressWarnings("unchecked")
+			List<Product> products = (List<Product>) ois.readObject();
+			for (Product p : products) {
+				prices.put(p.getId(), p.getPrice());
 			}
 		}
 		return prices;
+	}
+
+	private static List<Salesman> loadSalesmen() throws IOException, ClassNotFoundException {
+		try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(VENDORS_SER))) {
+			@SuppressWarnings("unchecked")
+			List<Salesman> salespeople = (List<Salesman>) ois.readObject();
+			return salespeople;
+		}
 	}
 
 	private static int calculateTotalSalesForVendor(String id, Map<String, Integer> productPrices) {
@@ -84,6 +92,7 @@ public class Main {
 		}
 		return total;
 	}
+
 
 	private static List<String> readFile(String path) {
 		List<String> result = new ArrayList<>();
