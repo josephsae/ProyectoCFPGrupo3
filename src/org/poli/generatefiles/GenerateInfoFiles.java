@@ -30,18 +30,12 @@ public class GenerateInfoFiles {
 	private static final String VENDORS_SER = DATA_DIR + "salesmen.ser";
 	private static final String PRODUCTS_SER = DATA_DIR + "products.ser";
 
-	private static final String[] FIRST_NAMES = {
-		"Carlos", "Maria", "Luis", "Andrea", "Pedro", "Sofia", "Alejandra",
-		"Jefferson", "Lorena", "Paola", "Diego", "Lucia", "Leidy", "Camila", "Juan", "Vanesa", "Clara"
-	};
-	private static final String[] LAST_NAMES = {
-		"Gomez", "Rodriguez", "Lopez", "Fernandez", "Martinez", "Fernandez",
-		"Martinez", "Torres", "Mendoza", "Jimenez", "Vargas", "Rios", "Coronado", "Roa", "Betancur"
-	};
-	private static final String[] PRODUCT_NAMES = {
-		"Laptop", "Mouse", "Teclado", "Monitor", "Impresora", "Celular",
-		"Tablet", "Auriculares", "GPS", "Televisor", "Control remoto", "Camara de seguridad"
-	};
+	private static final String[] FIRST_NAMES = { "Carlos", "Maria", "Luis", "Andrea", "Pedro", "Sofia", "Alejandra",
+			"Jefferson", "Lorena", "Paola", "Diego", "Lucia", "Leidy", "Camila", "Juan", "Vanesa", "Clara" };
+	private static final String[] LAST_NAMES = { "Gomez", "Rodriguez", "Lopez", "Fernandez", "Martinez", "Fernandez",
+			"Martinez", "Torres", "Mendoza", "Jimenez", "Vargas", "Rios", "Coronado", "Roa", "Betancur" };
+	private static final String[] PRODUCT_NAMES = { "Laptop", "Mouse", "Teclado", "Monitor", "Impresora", "Celular",
+			"Tablet", "Auriculares", "GPS", "Televisor", "Control remoto", "Camara de seguridad" };
 
 	private static final int PRODUCT_COUNT = 10;
 	private static final int SALESMAN_COUNT = 5;
@@ -50,13 +44,19 @@ public class GenerateInfoFiles {
 	public static void main(String[] args) {
 		try {
 			createDirectory(DATA_DIR);
-			createProductsFile(PRODUCT_COUNT);
-			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
-			for (long id : salesmanIds) {
-				for(int i = 0; i < (int)(Math.random()*3+1); i++){
-					createSalesMenFile(PRODUCT_COUNT, id, i+1);
+
+			List<Product> products = createProductsFile(PRODUCT_COUNT);
+			serializeObject(products, PRODUCTS_SER);
+
+			List<Salesman> salesmen = createSalesManInfoFile(SALESMAN_COUNT);
+			serializeObject(salesmen, VENDORS_SER);
+
+			for (Salesman s : salesmen) {
+				for (int i = 0; i < (int) (Math.random() * 3 + 1); i++) {
+					createSalesMenFile(PRODUCT_COUNT, s.getId(), i + 1);
 				}
 			}
+
 			System.out.println("✅ Archivos generados y serializados exitosamente.");
 		} catch (IOException e) {
 			System.err.println("❌ Error generando archivos: " + e.getMessage());
@@ -105,7 +105,6 @@ public class GenerateInfoFiles {
 		}
 	}
 
-
 	/**
 	 * Genera el archivo con información de vendedores.
 	 * 
@@ -113,9 +112,9 @@ public class GenerateInfoFiles {
 	 * @return Lista de IDs únicos generados
 	 * @throws IOException Si ocurre un error de escritura
 	 */
-	public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
+	public static List<Salesman> createSalesManInfoFile(int salesmanCount) throws IOException {
 		Set<Long> ids = new HashSet<>();
-		List<Long> idList = new ArrayList<>();
+		List<Salesman> salesmen = new ArrayList<>();
 
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(VENDORS_FILE), "UTF-8"))) {
@@ -125,15 +124,15 @@ public class GenerateInfoFiles {
 					id = generateRandomID();
 				} while (ids.contains(id));
 				ids.add(id);
-				idList.add(id);
 
 				String firstName = FIRST_NAMES[RANDOM.nextInt(FIRST_NAMES.length)];
 				String lastName = LAST_NAMES[RANDOM.nextInt(LAST_NAMES.length)];
 				writer.write("CC;" + id + ";" + firstName + " " + lastName + "\n");
+
+				salesmen.add(new Salesman(firstName, id, lastName));
 			}
 		}
-
-		return idList;
+		return salesmen;
 	}
 
 	/**

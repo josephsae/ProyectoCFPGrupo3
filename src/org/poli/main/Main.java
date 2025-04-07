@@ -72,7 +72,7 @@ public class Main {
 	private static int calculateTotalSalesForVendor(String id, Map<String, Integer> productPrices) {
 		List<String> files = listFilesByFolder(new File(DATA_DIR), id);
 		int total = 0;
-		for(String file : files){
+		for (String file : files) {
 			String salesFile = DATA_DIR + file;
 			List<String> lines = readFile(salesFile);
 			boolean readingProducts = false;
@@ -82,7 +82,8 @@ public class Main {
 					readingProducts = true;
 					continue;
 				}
-				if (!readingProducts) continue;
+				if (!readingProducts)
+					continue;
 
 				String[] parts = line.split(";");
 				if (parts.length >= 2) {
@@ -90,10 +91,10 @@ public class Main {
 					int quantity = Integer.parseInt(parts[1]);
 					Integer price = productPrices.get(productId);
 					if (price != null) {
-					total += price * quantity;
+						total += price * quantity;
+					}
 				}
 			}
-		}
 		}
 		return total;
 	}
@@ -119,29 +120,27 @@ public class Main {
 
 			for (Salesman s : salesmen) {
 				String id = String.valueOf(s.getId());
-				String salesFile = DATA_DIR + "sales_" + id + ".csv";
-				File file = new File(salesFile);
+				List<String> salesFiles = listFilesByFolder(new File(DATA_DIR), id);
 
-				if (!file.exists()) {
-					System.err.println("⚠️ Archivo no encontrado: " + salesFile);
-					continue;
-				}
+				for (String filename : salesFiles) {
+					String salesFile = DATA_DIR + filename;
+					List<String> salesLines = readFile(salesFile);
 
-				List<String> salesLines = readFile(salesFile);
+					boolean readingProducts = false;
+					for (String line : salesLines) {
+						if (line.startsWith("ProductID")) {
+							readingProducts = true;
+							continue;
+						}
+						if (!readingProducts)
+							continue;
 
-				boolean readingProducts = false;
-				for (String line : salesLines) {
-					if (line.startsWith("ProductID")) {
-						readingProducts = true;
-						continue;
-					}
-					if (!readingProducts) continue;
-
-					String[] parts = line.split(";");
-					if (parts.length >= 2) {
-						String productId = parts[0];
-						int quantity = Integer.parseInt(parts[1]);
-						productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);
+						String[] parts = line.split(";");
+						if (parts.length >= 2) {
+							String productId = parts[0];
+							int quantity = Integer.parseInt(parts[1]);
+							productSales.put(productId, productSales.getOrDefault(productId, 0) + quantity);
+						}
 					}
 				}
 			}
@@ -160,7 +159,6 @@ public class Main {
 			System.err.println("❌ Error al generar reporte de productos vendidos: " + e.getMessage());
 		}
 	}
-
 
 	private static class SalesEntry {
 		String name;
