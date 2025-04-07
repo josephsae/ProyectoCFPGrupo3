@@ -59,28 +59,30 @@ public class Main {
 	}
 
 	private static int calculateTotalSalesForVendor(String id, Map<String, Integer> productPrices) {
-		String salesFile = DATA_DIR + "sales_" + id + ".csv";
-		List<String> lines = readFile(salesFile);
+		List<String> files = listFilesByFolder(new File(DATA_DIR), id);
 		int total = 0;
+		for(String file : files){
+			String salesFile = DATA_DIR + file;
+			List<String> lines = readFile(salesFile);
+			boolean readingProducts = false;
 
-		boolean readingProducts = false;
+			for (String line : lines) {
+				if (line.startsWith("ProductID")) {
+					readingProducts = true;
+					continue;
+				}
+				if (!readingProducts) continue;
 
-		for (String line : lines) {
-			if (line.startsWith("ProductID")) {
-				readingProducts = true;
-				continue;
-			}
-			if (!readingProducts) continue;
-
-			String[] parts = line.split(";");
-			if (parts.length >= 2) {
-				String productId = parts[0];
-				int quantity = Integer.parseInt(parts[1]);
-				Integer price = productPrices.get(productId);
-				if (price != null) {
+				String[] parts = line.split(";");
+				if (parts.length >= 2) {
+					String productId = parts[0];
+					int quantity = Integer.parseInt(parts[1]);
+					Integer price = productPrices.get(productId);
+					if (price != null) {
 					total += price * quantity;
 				}
 			}
+		}
 		}
 		return total;
 	}
@@ -106,5 +108,15 @@ public class Main {
 			this.name = name;
 			this.total = total;
 		}
+	}
+
+	private static List<String> listFilesByFolder(final File folder, String id) {
+		List<String> files = new ArrayList<>();
+		for (final File fileEntry : folder.listFiles()) {
+			if (!fileEntry.isDirectory() && fileEntry.getName().contains(id)) {
+				files.add(fileEntry.getName());
+			}
+		}
+		return files;
 	}
 }
