@@ -50,13 +50,13 @@ public class GenerateInfoFiles {
 	public static void main(String[] args) {
 		try {
 			createDirectory(DATA_DIR);
-			List<Product> products = createProductsFile(PRODUCT_COUNT);
-			List<Salesman> salesmen = createSalesManInfoFile(SALESMAN_COUNT);
-			for (Salesman s : salesmen) {
-				createSalesMenFile(PRODUCT_COUNT, s.getId());
+			createProductsFile(PRODUCT_COUNT);
+			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
+			for (long id : salesmanIds) {
+				for(int i = 0; i < (int)(Math.random()*3+1); i++){
+					createSalesMenFile(PRODUCT_COUNT, id, i+1);
+				}
 			}
-			serializeObject(products, PRODUCTS_SER);
-			serializeObject(salesmen, VENDORS_SER);
 			System.out.println("✅ Archivos generados y serializados exitosamente.");
 		} catch (IOException e) {
 			System.err.println("❌ Error generando archivos: " + e.getMessage());
@@ -86,8 +86,9 @@ public class GenerateInfoFiles {
 	 * @param id               Identificación única del vendedor
 	 * @throws IOException Si ocurre un error de escritura
 	 */
-	public static void createSalesMenFile(int randomSalesCount, long id) throws IOException {
-		String filename = DATA_DIR + "sales_" + id + ".csv";
+	public static void createSalesMenFile(int randomSalesCount, long id, int count) throws IOException {
+		String filename = DATA_DIR + "sales_" + id + "_" + count + ".csv";
+
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
 			writer.write("TipoDocumentoVendedor;IDVendedor\n");
@@ -104,16 +105,18 @@ public class GenerateInfoFiles {
 		}
 	}
 
+
 	/**
-	 * Genera el archivo CSV de vendedores y retorna la lista de objetos Salesman.
+	 * Genera el archivo con información de vendedores.
 	 * 
-	 * @param salesmanCount Número de vendedores a crear
-	 * @return Lista de vendedores generados
+	 * @param salesmanCount Número de vendedores a generar
+	 * @return Lista de IDs únicos generados
 	 * @throws IOException Si ocurre un error de escritura
 	 */
-	public static List<Salesman> createSalesManInfoFile(int salesmanCount) throws IOException {
+	public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
 		Set<Long> ids = new HashSet<>();
-		List<Salesman> salesmen = new ArrayList<>();
+		List<Long> idList = new ArrayList<>();
+
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(VENDORS_FILE), "UTF-8"))) {
 			for (int i = 0; i < salesmanCount; i++) {
@@ -122,15 +125,15 @@ public class GenerateInfoFiles {
 					id = generateRandomID();
 				} while (ids.contains(id));
 				ids.add(id);
+				idList.add(id);
+
 				String firstName = FIRST_NAMES[RANDOM.nextInt(FIRST_NAMES.length)];
 				String lastName = LAST_NAMES[RANDOM.nextInt(LAST_NAMES.length)];
-				String fullName = firstName + " " + lastName;
-				Salesman s = new Salesman("CC", id, fullName);
-				salesmen.add(s);
-				writer.write("CC;" + id + ";" + fullName + "\n");
+				writer.write("CC;" + id + ";" + firstName + " " + lastName + "\n");
 			}
 		}
-		return salesmen;
+
+		return idList;
 	}
 
 	/**
