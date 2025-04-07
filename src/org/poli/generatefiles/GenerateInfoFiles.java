@@ -41,7 +41,9 @@ public class GenerateInfoFiles {
 			createProductsFile(PRODUCT_COUNT);
 			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
 			for (long id : salesmanIds) {
-				createSalesMenFile(PRODUCT_COUNT, id);
+				for(int i = 0; i < (int)(Math.random()*3+1); i++){
+					createSalesMenFile(PRODUCT_COUNT, id, i+1);
+				}
 			}
 			System.out.println("Files generated successfully.");
 		} catch (IOException e) {
@@ -72,8 +74,8 @@ public class GenerateInfoFiles {
 	 * @param id               Identificación única del vendedor
 	 * @throws IOException Si ocurre un error de escritura
 	 */
-	public static void createSalesMenFile(int randomSalesCount, long id) throws IOException {
-		String filename = DATA_DIR + "sales_" + id + ".csv";
+	public static void createSalesMenFile(int randomSalesCount, long id, int count) throws IOException {
+		String filename = DATA_DIR + "sales_" + id + "_" + count + ".csv";
 
 		try (BufferedWriter writer = new BufferedWriter(
 				new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
