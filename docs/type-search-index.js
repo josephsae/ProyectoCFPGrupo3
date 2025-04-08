@@ -1,1 +1,1 @@
-typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"org.poli.generatefiles","l":"GenerateInfoFiles"}]
+typeSearchIndex = [{"l":"All Classes","url":"allclasses-index.html"},{"p":"org.poli.generatefiles","l":"GenerateInfoFiles"},{"p":"org.poli.main","l":"Main"},{"p":"org.poli.generatefiles","l":"Product"},{"p":"org.poli.generatefiles","l":"Salesman"}]

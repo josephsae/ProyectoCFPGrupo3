@@ -4,164 +4,188 @@ import java.io.*;
 import java.util.*;
 
 /**
- * Genera archivos CSV con información simulada de productos, vendedores y
- * ventas.
+ * Genera archivos CSV y archivos serializados (.ser) con información simulada
+ * de productos, vendedores y ventas.
+ *
  * <p>
- * Ejemplo de uso:
- * 
- * <pre>{@code
- * - Archivos generados en 'data/':
- *   1. products.csv    (Productos con ID, nombre y precio)
- *   2. salesmen.csv    (Vendedores con documento y nombres)
- *   3. sales_[ID].csv  (Ventas por vendedor)
- * }</pre>
- * 
+ * Ejemplo de archivos generados en el directorio 'data/':
+ * </p>
+ *
+ * <pre>
+ * - products.csv     (ID, nombre y precio de productos)
+ * - salesmen.csv     (Documento y nombre completo de los vendedores)
+ * - sales_[ID].csv   (Ventas realizadas por cada vendedor)
+ * - products.ser     (Lista serializada de objetos Product)
+ * - salesmen.ser     (Lista serializada de objetos Salesman)
+ * </pre>
+ *
  * @author Poli
- * @version 1.0
+ * @version 2.0
  */
-
 public class GenerateInfoFiles {
 
-	private static final String DATA_DIR = "data/";
-	private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv";
-	private static final String PRODUCTS_FILE = DATA_DIR + "products.csv";
-	private static final String[] FIRST_NAMES = { "Carlos", "Maria", "Luis", "Andrea", "Pedro", "Sofia", "Alejandra",
-			"Jefferson", "Lorena", "Paola", "Diego", "Lucia", "Leidy", "Camila", "Juan", "Vanesa", "Clara" };
-	private static final String[] LAST_NAMES = { "Gomez", "Rodriguez", "Lopez", "Fernandez", "Martinez", "Fernandez",
-			"Martinez", "Torres", "Mendoza", "Jimenez", "Vargas", "Rios", "Coronado", "Roa", "Betancur" };
-	private static final Random RANDOM = new Random();
-	private static final String[] PRODUCT_NAMES = { "Laptop", "Mouse", "Teclado", "Monitor", "Impresora", "Celular",
-			"Tablet", "Auriculares", "GPS", "Televisor", "Control remoto", "Camara de seguridad" };
-	private static final int PRODUCT_COUNT = 10;
-	private static final int SALESMAN_COUNT = 5;
+    private static final String DATA_DIR = "data/";
+    private static final String VENDORS_FILE = DATA_DIR + "salesmen.csv";
+    private static final String PRODUCTS_FILE = DATA_DIR + "products.csv";
+    private static final String VENDORS_SER = DATA_DIR + "salesmen.ser";
+    private static final String PRODUCTS_SER = DATA_DIR + "products.ser";
 
-	public static void main(String[] args) {
-		try {
-			createDirectory(DATA_DIR);
-			createProductsFile(PRODUCT_COUNT);
-			List<Long> salesmanIds = createSalesManInfoFile(SALESMAN_COUNT);
-			for (long id : salesmanIds) {
-				for(int i = 0; i < (int)(Math.random()*3+1); i++){
-					createSalesMenFile(PRODUCT_COUNT, id, i+1);
-				}
-			}
-			System.out.println("Files generated successfully.");
-		} catch (IOException e) {
-			System.err.println("Error generating files: " + e.getMessage());
-		}
-	}
+    private static final String[] FIRST_NAMES = { "Carlos", "Maria", "Luis", "Andrea", "Pedro", "Sofia", "Alejandra",
+            "Jefferson", "Lorena", "Paola", "Diego", "Lucia", "Leidy", "Camila", "Juan", "Vanesa", "Clara" };
+    private static final String[] LAST_NAMES = { "Gomez", "Rodriguez", "Lopez", "Fernandez", "Martinez", "Fernandez",
+            "Martinez", "Torres", "Mendoza", "Jimenez", "Vargas", "Rios", "Coronado", "Roa", "Betancur" };
+    private static final String[] PRODUCT_NAMES = { "Laptop", "Mouse", "Teclado", "Monitor", "Impresora", "Celular",
+            "Tablet", "Auriculares", "GPS", "Televisor", "Control remoto", "Camara de seguridad" };
 
-	/**
-	 * Crea un directorio si no existe.
-	 * 
-	 * @param dirPath Ruta del directorio a crear
-	 */
-	private static void createDirectory(String dirPath) {
-		File directory = new File(dirPath);
-		if (!directory.exists()) {
-			if (directory.mkdirs()) {
-				System.out.println("Directory created: " + dirPath);
-			} else {
-				System.err.println("Failed to create directory: " + dirPath);
-			}
-		}
-	}
+    private static final int PRODUCT_COUNT = 10;
+    private static final int SALESMAN_COUNT = 5;
+    private static final Random RANDOM = new Random();
 
-	/**
-	 * Genera un archivo de ventas para un vendedor específico.
-	 * 
-	 * @param randomSalesCount Cantidad de productos únicos en el reporte
-	 * @param id               Identificación única del vendedor
-	 * @throws IOException Si ocurre un error de escritura
-	 */
-	public static void createSalesMenFile(int randomSalesCount, long id, int count) throws IOException {
-		String filename = DATA_DIR + "sales_" + id + "_" + count + ".csv";
+    public static void main(String[] args) {
+        try {
+            createDirectory(DATA_DIR);
 
-		try (BufferedWriter writer = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
-			writer.write("TipoDocumentoVendedor;IDVendedor\n");
-			writer.write("CC;" + id + "\n");
-			writer.write("ProductID;Quantity\n");
+            List<Product> products = createProductsFile(PRODUCT_COUNT);
+            serializeObject(products, PRODUCTS_SER);
 
-			Set<Integer> usedProductIds = new HashSet<>();
+            List<Salesman> salesmen = createSalesManInfoFile(SALESMAN_COUNT);
+            serializeObject(salesmen, VENDORS_SER);
 
-			while (usedProductIds.size() < randomSalesCount) {
-				int productId = RANDOM.nextInt(PRODUCT_COUNT) + 1;
-				if (usedProductIds.add(productId)) {
-					int quantity = RANDOM.nextInt(5) + 1;
-					writer.write(String.format("P%03d;%d\n", productId, quantity));
-				}
-			}
-		}
-	}
+            for (Salesman s : salesmen) {
+                for (int i = 0; i < (int) (Math.random() * 3 + 1); i++) {
+                    createSalesMenFile(PRODUCT_COUNT, s.getId(), i + 1);
+                }
+            }
 
-	/**
-	 * Genera el archivo con información de vendedores.
-	 * 
-	 * @param salesmanCount Número de vendedores a generar
-	 * @return Lista de IDs únicos generados
-	 * @throws IOException Si ocurre un error de escritura
-	 */
-	public static List<Long> createSalesManInfoFile(int salesmanCount) throws IOException {
-		Set<Long> ids = new HashSet<>();
-		List<Long> idList = new ArrayList<>();
+            System.out.println("✅ Archivos generados y serializados exitosamente.");
+        } catch (IOException e) {
+            System.err.println("❌ Error generando archivos: " + e.getMessage());
+        }
+    }
 
-		try (BufferedWriter writer = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(VENDORS_FILE), "UTF-8"))) {
-			for (int i = 0; i < salesmanCount; i++) {
-				long id;
-				do {
-					id = generateRandomID();
-				} while (ids.contains(id));
-				ids.add(id);
-				idList.add(id);
+    /**
+     * Crea un directorio si no existe.
+     *
+     * @param dirPath Ruta del directorio a crear
+     */
+    private static void createDirectory(String dirPath) {
+        File directory = new File(dirPath);
+        if (!directory.exists()) {
+            if (directory.mkdirs()) {
+                System.out.println("📁 Directorio creado: " + dirPath);
+            } else {
+                System.err.println("⚠️ No se pudo crear el directorio: " + dirPath);
+            }
+        }
+    }
 
-				String firstName = FIRST_NAMES[RANDOM.nextInt(FIRST_NAMES.length)];
-				String lastName = LAST_NAMES[RANDOM.nextInt(LAST_NAMES.length)];
-				writer.write("CC;" + id + ";" + firstName + " " + lastName + "\n");
-			}
-		}
+    /**
+     * Crea un archivo de vendedores con datos aleatorios.
+     * 
+     * @param randomSalesCount Cantidad de ventas aleatorias a generar
+     * @param id               ID único del vendedor
+     * @param count            Número de vendedores a crear
+     * @throws IOException Si ocurre un error al escribir el archivocls
+     */
+    public static void createSalesMenFile(int randomSalesCount, long id, int count) throws IOException {
+        String filename = DATA_DIR + "sales_" + id + "_" + count + ".csv";
 
-		return idList;
-	}
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(filename), "UTF-8"))) {
+            writer.write("TipoDocumentoVendedor;IDVendedor\n");
+            writer.write("CC;" + id + "\n");
+            writer.write("ProductID;Quantity\n");
+            Set<Integer> usedProductIds = new HashSet<>();
+            while (usedProductIds.size() < randomSalesCount) {
+                int productId = RANDOM.nextInt(PRODUCT_COUNT) + 1;
+                if (usedProductIds.add(productId)) {
+                    int quantity = RANDOM.nextInt(5) + 1;
+                    writer.write(String.format("P%03d;%d\n", productId, quantity));
+                }
+            }
+        }
+    }
 
-	/**
-	 * Genera el archivo con información de productos.
-	 * 
-	 * @param productCount Número de productos a generar
-	 * @throws IOException Si ocurre un error de escritura
-	 */
-	public static void createProductsFile(int productCount) throws IOException {
-		try (BufferedWriter writer = new BufferedWriter(
-				new OutputStreamWriter(new FileOutputStream(PRODUCTS_FILE), "UTF-8"))) {
+    /**
+     * Genera el archivo con información de vendedores.
+     *
+     * @param salesmanCount Número de vendedores a generar
+     * @return Lista de IDs únicos generados
+     * @throws IOException Si ocurre un error de escritura
+     */
+    public static List<Salesman> createSalesManInfoFile(int salesmanCount) throws IOException {
+        Set<Long> ids = new HashSet<>();
+        List<Salesman> salesmen = new ArrayList<>();
 
-			Set<String> usedProductNames = new HashSet<>();
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(VENDORS_FILE), "UTF-8"))) {
+            for (int i = 0; i < salesmanCount; i++) {
+                long id;
+                do {
+                    id = generateRandomID();
+                } while (ids.contains(id));
+                ids.add(id);
 
-			for (int i = 1; i <= productCount; i++) {
-				String id = String.format("P%03d", i);
+                String firstName = FIRST_NAMES[RANDOM.nextInt(FIRST_NAMES.length)];
+                String lastName = LAST_NAMES[RANDOM.nextInt(LAST_NAMES.length)];
+                writer.write("CC;" + id + ";" + firstName + " " + lastName + "\n");
 
-				String name;
-				do {
-					name = PRODUCT_NAMES[RANDOM.nextInt(PRODUCT_NAMES.length)];
-				} while (usedProductNames.contains(name));
+                salesmen.add(new Salesman(firstName, id, lastName));
+            }
+        }
+        return salesmen;
+    }
 
-				usedProductNames.add(name);
+    /**
+     * Genera el archivo CSV de productos y retorna la lista de objetos Product.
+     *
+     * @param productCount Número de productos a generar
+     * @return Lista de productos generados
+     * @throws IOException Si ocurre un error de escritura
+     */
+    public static List<Product> createProductsFile(int productCount) throws IOException {
+        List<Product> products = new ArrayList<>();
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(new FileOutputStream(PRODUCTS_FILE), "UTF-8"))) {
+            Set<String> usedProductNames = new HashSet<>();
+            for (int i = 1; i <= productCount; i++) {
+                String id = String.format("P%03d", i);
+                String name;
+                do {
+                    name = PRODUCT_NAMES[RANDOM.nextInt(PRODUCT_NAMES.length)];
+                } while (usedProductNames.contains(name));
+                usedProductNames.add(name);
+                int price = (RANDOM.nextInt(50) + 1) * 1000;
+                products.add(new Product(id, name, price));
+                writer.write(id + ";" + name + ";" + price + "\n");
+            }
+        }
+        return products;
+    }
 
-				int price = (RANDOM.nextInt(50) + 1) * 1000;
-				writer.write(id + ";" + name + ";" + price + "\n");
-			}
-		}
-	}
+    /**
+     * Genera un número de cédula aleatorio entre 8 y 10 dígitos.
+     *
+     * @return Número de identificación generado
+     */
+    public static long generateRandomID() {
+        int digits = 8 + RANDOM.nextInt(3);
+        long min = (long) Math.pow(10, digits - 1);
+        long max = (long) Math.pow(10, digits) - 1;
+        return min + (long) (RANDOM.nextDouble() * (max - min));
+    }
 
-	/**
-	 * Genera un número de identificación aleatorio válido.
-	 * 
-	 * @return Número de 8 a 10 dígitos simulando una cédula colombiana
-	 */
-	public static long generateRandomID() {
-		int digits = 8 + RANDOM.nextInt(3);
-		long min = (long) Math.pow(10, digits - 1);
-		long max = (long) Math.pow(10, digits) - 1;
-		return min + (long) (RANDOM.nextDouble() * (max - min));
-	}
+    /**
+     * Serializa un objeto en una ruta dada como archivo .ser
+     *
+     * @param obj  Objeto a serializar
+     * @param path Ruta de archivo de salida
+     */
+    public static void serializeObject(Object obj, String path) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(path))) {
+            oos.writeObject(obj);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }
